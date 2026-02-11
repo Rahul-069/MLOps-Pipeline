@@ -35,11 +35,25 @@ jobs:
       #     # Build the image directly into Minikube (no push needed)
       #     docker build -t mnist-pipeline:latest .
 
+
+      - name: Install Dependencies
+        shell: powershell
+        run: |
+          # Ensure pip is up to date and install kfp locally for the runner
+          python -m pip install --upgrade pip
+          pip install kfp
+          
       - name: Compile Kubeflow Pipeline
         shell: powershell
         run: |
-          # Compile the python DSL into the pipeline.yaml file
+          # Now python will find the 'kfp' module
           python pipeline.py
+          
+      # - name: Compile Kubeflow Pipeline
+      #   shell: powershell
+      #   run: |
+      #     # Compile the python DSL into the pipeline.yaml file
+      #     python pipeline.py
 
       - name: Submit Pipeline to Kubeflow
         shell: powershell
