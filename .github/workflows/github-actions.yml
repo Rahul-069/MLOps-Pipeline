@@ -1,0 +1,36 @@
+name: MNIST MLOps CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    # IMPORTANT: This must match the label of your self-hosted runner
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Image inside Minikube
+        shell: powershell
+        run: |
+          # Connect the terminal to Minikube's internal Docker daemon
+          minikube docker-env | Invoke-Expression
+          
+          # Build the image directly into Minikube (no push needed)
+          docker build -t mnist-pipeline:latest .
+
+      - name: Compile Kubeflow Pipeline
+        shell: powershell
+        run: |
+          # Compile the python DSL into the pipeline.yaml file
+          python pipeline.py
+
+      - name: Submit Pipeline to Kubeflow
+        shell: powershell
+        run: |
+          # Use the KFP CLI to upload the new version
+          # Note: Ensure 'kfp' is installed in your system path
+          kfp pipeline upload -p mnist-project pipeline.yaml || kfp pipeline upload-version -p mnist-project pipeline.yaml --version-name "v-${{ github.sha }}"
