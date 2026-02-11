@@ -16,11 +16,24 @@ jobs:
       - name: Build Image inside Minikube
         shell: powershell
         run: |
-          # Connect the terminal to Minikube's internal Docker daemon
-          minikube docker-env | Invoke-Expression
+          # 1. Start Minikube if it isn't already (Sanity check)
+          minikube start --driver=docker
           
-          # Build the image directly into Minikube (no push needed)
+          # 2. Tell the terminal to use Minikube's internal Docker
+          # We add '-p minikube' and '--shell powershell' to avoid errors
+          minikube -p minikube docker-env --shell powershell | Invoke-Expression
+          
+          # 3. Build the image directly into the cluster
           docker build -t mnist-pipeline:latest .
+          
+      # - name: Build Image inside Minikube
+      #   shell: powershell
+      #   run: |
+      #     # Connect the terminal to Minikube's internal Docker daemon
+      #     minikube docker-env | Invoke-Expression
+          
+      #     # Build the image directly into Minikube (no push needed)
+      #     docker build -t mnist-pipeline:latest .
 
       - name: Compile Kubeflow Pipeline
         shell: powershell
