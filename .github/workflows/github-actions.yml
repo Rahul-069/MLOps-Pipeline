@@ -60,4 +60,5 @@ jobs:
         run: |
           # Use the KFP CLI to upload the new version
           # Note: Ensure 'kfp' is installed in your system path
-          kfp pipeline upload -p mnist-project pipeline.yaml || kfp pipeline upload-version -p mnist-project pipeline.yaml --version-name "v-${{ github.sha }}"
+          # kfp pipeline upload -p mnist-project pipeline.yaml || kfp pipeline upload-version -p mnist-project pipeline.yaml --version-name "v-${{ github.sha }}"
+          kfp pipeline upload -p mnist-project pipeline.yaml
