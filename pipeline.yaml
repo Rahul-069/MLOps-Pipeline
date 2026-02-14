@@ -1,0 +1,158 @@
+# PIPELINE DEFINITION
+# Name: mnist-pipeline
+components:
+  comp-deploy-op:
+    executorLabel: exec-deploy-op
+    inputDefinitions:
+      artifacts:
+        model_input:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+  comp-evaluate-op:
+    executorLabel: exec-evaluate-op
+    inputDefinitions:
+      artifacts:
+        data_input:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+        model_input:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+    outputDefinitions:
+      artifacts:
+        metrics:
+          artifactType:
+            schemaTitle: system.ClassificationMetrics
+            schemaVersion: 0.0.1
+  comp-preprocess-op:
+    executorLabel: exec-preprocess-op
+    outputDefinitions:
+      artifacts:
+        data_output:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+  comp-train-op:
+    executorLabel: exec-train-op
+    inputDefinitions:
+      artifacts:
+        data_input:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+    outputDefinitions:
+      artifacts:
+        model_output:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+deploymentSpec:
+  executors:
+    exec-deploy-op:
+      container:
+        args:
+        - --model_path
+        - '{{$.inputs.artifacts[''model_input''].path}}'
+        - --deploy_path
+        - /tmp/prod_model
+        command:
+        - python
+        - deploy.py
+        image: mnist-pipeline:latest
+    exec-evaluate-op:
+      container:
+        args:
+        - --model_path
+        - '{{$.inputs.artifacts[''model_input''].path}}'
+        - --data_path
+        - '{{$.inputs.artifacts[''data_input''].path}}'
+        - --metrics_path
+        - '{{$.outputs.artifacts[''metrics''].path}}'
+        command:
+        - python
+        - evaluate.py
+        image: mnist-pipeline:latest
+    exec-preprocess-op:
+      container:
+        args:
+        - --output_path
+        - '{{$.outputs.artifacts[''data_output''].path}}'
+        command:
+        - python
+        - preprocess.py
+        image: mnist-pipeline:latest
+    exec-train-op:
+      container:
+        args:
+        - --input_path
+        - '{{$.inputs.artifacts[''data_input''].path}}'
+        - --model_path
+        - '{{$.outputs.artifacts[''model_output''].path}}'
+        command:
+        - python
+        - train.py
+        image: mnist-pipeline:latest
+pipelineInfo:
+  name: mnist-pipeline
+root:
+  dag:
+    tasks:
+      deploy-op:
+        cachingOptions: {}
+        componentRef:
+          name: comp-deploy-op
+        dependentTasks:
+        - evaluate-op
+        - train-op
+        inputs:
+          artifacts:
+            model_input:
+              taskOutputArtifact:
+                outputArtifactKey: model_output
+                producerTask: train-op
+        taskInfo:
+          name: deploy-op
+      evaluate-op:
+        cachingOptions: {}
+        componentRef:
+          name: comp-evaluate-op
+        dependentTasks:
+        - preprocess-op
+        - train-op
+        inputs:
+          artifacts:
+            data_input:
+              taskOutputArtifact:
+                outputArtifactKey: data_output
+                producerTask: preprocess-op
+            model_input:
+              taskOutputArtifact:
+                outputArtifactKey: model_output
+                producerTask: train-op
+        taskInfo:
+          name: evaluate-op
+      preprocess-op:
+        cachingOptions: {}
+        componentRef:
+          name: comp-preprocess-op
+        taskInfo:
+          name: preprocess-op
+      train-op:
+        cachingOptions: {}
+        componentRef:
+          name: comp-train-op
+        dependentTasks:
+        - preprocess-op
+        inputs:
+          artifacts:
+            data_input:
+              taskOutputArtifact:
+                outputArtifactKey: data_output
+                producerTask: preprocess-op
+        taskInfo:
+          name: train-op
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.15.2
