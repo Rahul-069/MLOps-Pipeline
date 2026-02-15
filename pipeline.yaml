@@ -61,7 +61,7 @@ deploymentSpec:
         command:
         - python
         - deploy.py
-        image: mnist-pipeline:latest
+        image: rahul1522025/mnist-pipeline:latest
     exec-evaluate-op:
       container:
         args:
@@ -74,7 +74,7 @@ deploymentSpec:
         command:
         - python
         - evaluate.py
-        image: mnist-pipeline:latest
+        image: rahul1522025/mnist-pipeline:latest
     exec-preprocess-op:
       container:
         args:
@@ -83,7 +83,7 @@ deploymentSpec:
         command:
         - python
         - preprocess.py
-        image: mnist-pipeline:latest
+        image: rahul1522025/mnist-pipeline:latest
     exec-train-op:
       container:
         args:
@@ -94,7 +94,7 @@ deploymentSpec:
         command:
         - python
         - train.py
-        image: mnist-pipeline:latest
+        image: rahul1522025/mnist-pipeline:latest
 pipelineInfo:
   name: mnist-pipeline
 root:
