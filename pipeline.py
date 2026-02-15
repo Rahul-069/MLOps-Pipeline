@@ -2,10 +2,13 @@ from kfp import dsl
 from kfp import compiler
 
 
+DOCKER_IMAGE = "rahul1522025/mnist-pipeline:latest"
+
+
 @dsl.container_component
 def preprocess_op(data_output: dsl.Output[dsl.Dataset]):
     return dsl.ContainerSpec(
-        image='mnist-pipeline:latest',
+        image=DOCKER_IMAGE,
         command=['python', 'preprocess.py'],
         args=['--output_path', data_output.path]
     )
@@ -17,7 +20,7 @@ def train_op(
     model_output: dsl.Output[dsl.Model]
 ):
     return dsl.ContainerSpec(
-        image='mnist-pipeline:latest',
+        image=DOCKER_IMAGE,
         command=['python', 'train.py'],
         args=[
             '--input_path', data_input.path,
@@ -33,7 +36,7 @@ def evaluate_op(
     metrics: dsl.Output[dsl.ClassificationMetrics]
 ):
     return dsl.ContainerSpec(
-        image='mnist-pipeline:latest',
+        image=DOCKER_IMAGE,
         command=['python', 'evaluate.py'],
         args=[
             '--model_path', model_input.path,
@@ -46,7 +49,7 @@ def evaluate_op(
 @dsl.container_component
 def deploy_op(model_input: dsl.Input[dsl.Model]):
     return dsl.ContainerSpec(
-        image='mnist-pipeline:latest',
+        image=DOCKER_IMAGE,
         command=['python', 'deploy.py'],
         args=[
             '--model_path', model_input.path,
@@ -73,11 +76,10 @@ def mnist_pipeline():
         model_input=train_task.outputs['model_output']
     )
 
-    # Disable caching (this is supported)
+    # Disable caching
     for task in [prep_task, train_task, eval_task, deploy_task]:
         task.set_caching_options(False)
 
-    # Ensure deployment runs after evaluation
     deploy_task.after(eval_task)
 
 
