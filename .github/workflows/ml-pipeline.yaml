@@ -24,7 +24,8 @@ jobs:
           pip install kfp==1.8.22
 
       - name: Debug Username
-        run: echo "Username is: ${{secrets.DOCKER_USERNAME}}"
+        run: |
+          echo "Username is: ${{secrets.DOCKER_USERNAME}}"
 
       - name: Log in to Docker Hub
         run: |
