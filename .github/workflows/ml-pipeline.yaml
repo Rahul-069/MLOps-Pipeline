@@ -55,4 +55,4 @@ jobs:
         env:
           KFP_ENDPOINT: http://localhost:8080
         run: |
-          python submit_run.py
+          python test_run.py
