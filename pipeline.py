@@ -5,13 +5,27 @@ from kfp import compiler
 DOCKER_IMAGE = "rahul1522025/mnist-pipeline:latest"
 
 
+# @dsl.container_component
+# def preprocess_op(data_output: dsl.Output[dsl.Dataset]):
+#     return dsl.ContainerSpec(
+#         image=DOCKER_IMAGE,
+#         command=['python', 'preprocess.py'],
+#         args=['--output_path', data_output.path]
+#     )
+
+
+
 @dsl.container_component
-def preprocess_op(data_output: dsl.Output[dsl.Dataset]):
+def preprocess_op(bucket: str, data_output: dsl.Output[dsl.Dataset]):
     return dsl.ContainerSpec(
         image=DOCKER_IMAGE,
         command=['python', 'preprocess.py'],
-        args=['--output_path', data_output.path]
+        args=[
+            '--bucket', bucket, 
+            '--output_path', data_output.path
+        ]
     )
+
 
 
 @dsl.container_component
@@ -59,9 +73,11 @@ def deploy_op(model_input: dsl.Input[dsl.Model]):
 
 
 @dsl.pipeline(name='mnist-pipeline')
-def mnist_pipeline():
+def mnist_pipeline(bucket_name: str = 'mnist-data'):
 
-    prep_task = preprocess_op()
+    prep_task = preprocess_op(bucket=bucket_name)
+
+    # prep_task.set_image_pull_policy('Always')  # Ensure latest image is used
 
     train_task = train_op(
         data_input=prep_task.outputs['data_output']
