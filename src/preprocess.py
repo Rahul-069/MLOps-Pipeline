@@ -32,7 +32,7 @@ from torchvision import transforms
 
 def download_from_minio(bucket, object_name, local_path):
     s3 = boto3.client('s3',
-                      endpoint_url='http://host.docker.internal:9000',
+                      endpoint_url='http://172.21.64.1:9000',
                       aws_access_key_id='minio',
                       aws_secret_access_key='minio123')
     s3.download_file(bucket, object_name, local_path)
@@ -72,4 +72,5 @@ if __name__ == "__main__":
     parser.add_argument('--bucket', type=str, required=True)
     parser.add_argument('--output_path', type=str, required=True)
     args = parser.parse_args()
+
     preprocess(args.bucket, args.output_path)
