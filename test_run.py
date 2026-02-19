@@ -19,7 +19,7 @@ client.wait_for_run_completion(run.run_id, timeout=3600)
 
 run_detail = client.get_run(run.run_id)
 
-status = run_detail.run_info.state
+status = run_detail.state
 print("Final status:", status)
 
 if status != "Succeeded":
