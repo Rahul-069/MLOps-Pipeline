@@ -15,7 +15,7 @@ run = client.create_run_from_pipeline_package(
 print("Run submitted:", run.run_id)
 
 # Wait for completion
-client.wait_for_run_completion(run.run_id, timeout=3600)
+# client.wait_for_run_completion(run.run_id, timeout=3600)
 
 run_detail = client.get_run(run.run_id)
 
