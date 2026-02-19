@@ -22,7 +22,7 @@ run_detail = client.get_run(run.run_id)
 status = run_detail.state
 print("Final status:", status)
 
-if status != "Succeeded":
+if status != "SUCCEEDED":
     print("Pipeline failed!")
     sys.exit(1)
 
